@@ -5,9 +5,31 @@ using System.Threading;
 
 namespace AzureWebjobHost
 {
+    public interface IWebJobsShutdownWatcher : IDisposable
+    {
+        CancellationToken Token { get; }
+    }
+
+    public class WebJobsShutdownWatcher : IWebJobsShutdownWatcher
+    {
+        private readonly CopyOf.Microsoft.Azure.WebJobs.WebJobsShutdownWatcher _webJobsShutdownWatcher = new CopyOf.Microsoft.Azure.WebJobs.WebJobsShutdownWatcher();
+        public CancellationToken Token => _webJobsShutdownWatcher.Token;
+
+        public void Dispose()
+        {
+            _webJobsShutdownWatcher.Dispose();
+        }
+    }
+}
+
+/// <summary>
+/// Copied completely unchanged from:
+/// https://github.com/Azure/azure-webjobs-sdk/blob/master/src/Microsoft.Azure.WebJobs.Host/WebjobsShutdownWatcher.cs
+/// </summary>
+namespace CopyOf.Microsoft.Azure.WebJobs
+{
     /// <summary>
     /// Helper class for providing a cancellation token for when this WebJob's shutdown is signaled.
-    /// https://github.com/Azure/azure-webjobs-sdk/blob/master/src/Microsoft.Azure.WebJobs.Host/WebjobsShutdownWatcher.cs
     /// </summary>
     public sealed class WebJobsShutdownWatcher : IDisposable
     {

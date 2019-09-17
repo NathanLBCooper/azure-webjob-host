@@ -11,14 +11,15 @@ namespace AzureWebjobHost
     {
         private const int stoppingWaitTimeMs = 4000;
 
-        private readonly WebJobsShutdownWatcher _webJobsShutdownWatcher = new WebJobsShutdownWatcher();
+        private readonly IWebJobsShutdownWatcher _webJobsShutdownWatcher;
         private readonly CancellationTokenSource _internalCts = new CancellationTokenSource();
         private readonly CancellationTokenSource _linkedCts;
         private readonly ManualResetEventSlim _waitForExit = new ManualResetEventSlim(true);
 
-        public JobHost(CancellationToken externalToken = default)
+        public JobHost(CancellationToken externalToken = default, IWebJobsShutdownWatcher webJobsShutdownWatcher = default)
         {
             _linkedCts = CancellationTokenSource.CreateLinkedTokenSource(_internalCts.Token, externalToken);
+            _webJobsShutdownWatcher = webJobsShutdownWatcher ?? new WebJobsShutdownWatcher();
 
             void Shutdown()
             {
