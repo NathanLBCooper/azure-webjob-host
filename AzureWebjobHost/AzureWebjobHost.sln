@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29020.237
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AzureWebjobHost", "AzureWebjobHost\AzureWebjobHost.csproj", "{6AA15878-349A-41F9-B621-7330A85554FD}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{6AA15878-349A-41F9-B621-7330A85554FD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6AA15878-349A-41F9-B621-7330A85554FD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6AA15878-349A-41F9-B621-7330A85554FD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6AA15878-349A-41F9-B621-7330A85554FD}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {2DA2786F-DB2F-4561-A546-9C6C097CEED5}
+	EndGlobalSection
+EndGlobal
