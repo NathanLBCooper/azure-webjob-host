@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.29020.237
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AzureWebjobHost", "AzureWebjobHost\AzureWebjobHost.csproj", "{6AA15878-349A-41F9-B621-7330A85554FD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AzureWebjobHost", "src\AzureWebjobHost\AzureWebjobHost.csproj", "{6AA15878-349A-41F9-B621-7330A85554FD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AzureWebjobHostTests", "AzureWebjobHostTests\AzureWebjobHostTests.csproj", "{7F34A1A9-4798-4967-A6B4-11C81D72605B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AzureWebjobHostTests", "test\AzureWebjobHostTests\AzureWebjobHostTests.csproj", "{F1A0FB46-B859-4A67-993B-FF7B52FAB3A6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -17,10 +17,10 @@ Global
 		{6AA15878-349A-41F9-B621-7330A85554FD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6AA15878-349A-41F9-B621-7330A85554FD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6AA15878-349A-41F9-B621-7330A85554FD}.Release|Any CPU.Build.0 = Release|Any CPU
-		{7F34A1A9-4798-4967-A6B4-11C81D72605B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{7F34A1A9-4798-4967-A6B4-11C81D72605B}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{7F34A1A9-4798-4967-A6B4-11C81D72605B}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{7F34A1A9-4798-4967-A6B4-11C81D72605B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F1A0FB46-B859-4A67-993B-FF7B52FAB3A6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F1A0FB46-B859-4A67-993B-FF7B52FAB3A6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F1A0FB46-B859-4A67-993B-FF7B52FAB3A6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F1A0FB46-B859-4A67-993B-FF7B52FAB3A6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

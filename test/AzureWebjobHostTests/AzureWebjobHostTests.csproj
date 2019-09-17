@@ -14,7 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\AzureWebjobHost\AzureWebjobHost.csproj" />
+    <ProjectReference Include="..\..\src\AzureWebjobHost\AzureWebjobHost.csproj" />
   </ItemGroup>
 
 </Project>
