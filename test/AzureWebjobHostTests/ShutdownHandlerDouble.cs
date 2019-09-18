@@ -17,9 +17,9 @@ namespace AzureWebjobHostTests
         {
         }
 
-        public void ProcessExitIn(int delayMs)
+        public Task ProcessExitIn(int delayMs)
         {
-            Task.Delay(delayMs).ContinueWith(t => ProcessExitEventHandler.Invoke(default, new EventArgs()));
+            return Task.Delay(delayMs).ContinueWith(t => ProcessExitEventHandler.Invoke(default, new EventArgs()));
         }
 
         public void CancelKeyPressIn(int delayMs)

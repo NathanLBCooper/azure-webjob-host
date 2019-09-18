@@ -108,7 +108,7 @@ namespace AzureWebjobHostTests
         [Fact]
         public async Task RunAsync_listens_to_ShutdownHandle_ProcessExit_as_well()
         {
-            _shutdownHandleDouble.ProcessExitIn(_doer.EstimatedMidflightTimeMs);
+            _ = _shutdownHandleDouble.ProcessExitIn(_doer.EstimatedMidflightTimeMs);
 
             await _host.RunAsync(_doer.DoAsync);
 
@@ -127,6 +127,68 @@ namespace AzureWebjobHostTests
             _doer.Finished.Should().BeFalse();
         }
 
+        [Fact]
+        public async Task RunAsync_in_case_of_shutdownHandle_event_tries_to_block_shutdown_while_action_deals_with_cancellation_token()
+        {
+            _doer.PauseOnCancellation = 2000;
+
+            var shutdown = _shutdownHandleDouble.ProcessExitIn(_doer.EstimatedMidflightTimeMs);
+            _ = _host.RunAsync(_doer.DoAsync);
+
+            await Task.Delay(1000);
+
+            // Ie it's waiting for us
+            shutdown.IsCompleted.Should().BeFalse();
+
+            shutdown.Wait(2000);
+            shutdown.IsCompleted.Should().BeTrue();
+        }
+
+        [Fact]
+        public async Task RunAsyncT_in_case_of_shutdownHandle_event_tries_to_block_shutdown_while_action_deals_with_cancellation_token()
+        {
+            _doer.PauseOnCancellation = 2000;
+
+            var shutdown = _shutdownHandleDouble.ProcessExitIn(_doer.EstimatedMidflightTimeMs);
+            _ = _host.RunAsync(_doer.AlwaysReturnValueAsync);
+
+            await Task.Delay(1000);
+
+            // Ie it's waiting for us
+            shutdown.IsCompleted.Should().BeFalse();
+
+            shutdown.Wait(2000);
+            shutdown.IsCompleted.Should().BeTrue();
+        }
+
+        [Fact]
+        public async Task RunAsync_in_case_of_shutdownHandle_event_stops_blocking_shutdown_after_4_seconds()
+        {
+            _doer.PauseOnCancellation = 6000;
+
+            var shutdown = _shutdownHandleDouble.ProcessExitIn(_doer.EstimatedMidflightTimeMs);
+            var run = _host.RunAsync(_doer.DoAsync);
+
+            shutdown.Wait(5000);
+            shutdown.IsCompleted.Should().BeTrue();
+            // Ie shutdown gave up waiting
+            run.IsCompleted.Should().BeFalse();
+        }
+
+        [Fact]
+        public async Task RunAsyncT_in_case_of_shutdownHandle_event_stops_blocking_shutdown_after_4_seconds()
+        {
+            _doer.PauseOnCancellation = 6000;
+
+            var shutdown = _shutdownHandleDouble.ProcessExitIn(_doer.EstimatedMidflightTimeMs);
+            var run = _host.RunAsync(_doer.AlwaysReturnValueAsync);
+
+            shutdown.Wait(5000);
+            shutdown.IsCompleted.Should().BeTrue();
+            // Ie shutdown gave up waiting
+            run.IsCompleted.Should().BeFalse();
+        }
+
         public void Dispose()
         {
             _host?.Dispose();
@@ -140,7 +202,7 @@ namespace AzureWebjobHostTests
             public bool Finished { get; private set; } = false;
             public bool Started { get; private set; } = false;
             public bool IgnoreCancellation { get; set; } = false;
-
+            public int? PauseOnCancellation { get; set; } = default;
 
             public async Task DoAsync(CancellationToken cancellationToken)
             {
@@ -154,7 +216,11 @@ namespace AzureWebjobHostTests
                 Started = true;
                 for (int i = 0; i < MaxLoops; i++)
                 {
-                    if (!IgnoreCancellation && cancellationToken.IsCancellationRequested) return DoerReturnValue.Started;
+                    if (!IgnoreCancellation && cancellationToken.IsCancellationRequested)
+                    {
+                        if (PauseOnCancellation.HasValue) await Task.Delay(PauseOnCancellation.Value);
+                        return DoerReturnValue.Started;
+                    }
                     await Task.Delay(LoopDelayMs);
                 }
 
