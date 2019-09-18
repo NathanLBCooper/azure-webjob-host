@@ -59,6 +59,19 @@ namespace AzureWebjobHost
             }
         }
 
+        public async Task<T> RunAsync<T>(Func<CancellationToken, Task<T>> action)
+        {
+            try
+            {
+                _waitForExit.Reset();
+                return await action.Invoke(_linkedCts.Token);
+            }
+            finally
+            {
+                _waitForExit.Set();
+            }
+        }
+
         public void Dispose()
         {
             _webJobsShutdownWatcher?.Dispose();

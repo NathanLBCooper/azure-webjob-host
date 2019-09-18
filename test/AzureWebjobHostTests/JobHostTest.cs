@@ -7,7 +7,6 @@ using Xunit;
 
 namespace AzureWebjobHostTests
 {
-    // todo these tests are pretty dull and don't test the multiple things we listen for (as well as WebJobShutdownWatcher) and the 4 second grace period
     public class JobHostTest : IDisposable
     {
         private readonly JobHost _host;
@@ -22,7 +21,7 @@ namespace AzureWebjobHostTests
         }
 
         [Fact]
-        public async Task uncancelled_action_runs_to_completion()
+        public async Task RunAsync_runs_uncancelled_tasks_to_completion()
         {
             await _host.RunAsync(_doer.DoAsync);
 
@@ -31,7 +30,38 @@ namespace AzureWebjobHostTests
         }
 
         [Fact]
-        public async Task already_cancelled_token_means_token_to_action_is_already_cancelled()
+        public async Task RunAsyncT_runs_uncancelled_tasks_to_completion_and_returns_result()
+        {
+            var result = await _host.RunAsync(_doer.AlwaysReturnValueAsync);
+
+            _doer.Started.Should().BeTrue();
+            _doer.Finished.Should().BeTrue();
+            result.Should().Be(DoerReturnValue.Finished);
+        }
+
+        [Fact]
+        public async Task RunAsync_passes_cancellation_onto_action()
+        {
+            _shutdownWatcherDouble.CancelIn(_doer.EstimatedMidflightTimeMs);
+            await _host.RunAsync(_doer.DoAsync);
+
+            _doer.Started.Should().BeTrue();
+            _doer.Finished.Should().BeFalse();
+        }
+
+        [Fact]
+        public async Task RunAsyncT_passes_cancellation_onto_action()
+        {
+            _shutdownWatcherDouble.CancelIn(_doer.EstimatedMidflightTimeMs);
+            var result = await _host.RunAsync(_doer.AlwaysReturnValueAsync);
+
+            _doer.Started.Should().BeTrue();
+            _doer.Finished.Should().BeFalse();
+            result.Should().Be(DoerReturnValue.Started);
+        }
+
+        [Fact]
+        public async Task RunAsync_passes_already_cancelled_token_to_method_if_token_cancelled_beforehand()
         {
             _shutdownWatcherDouble.Cancel();
 
@@ -42,61 +72,90 @@ namespace AzureWebjobHostTests
         }
 
         [Fact]
-        public async Task cancellation_midflight_is_passed_to_action_via_cancellation_token()
+        public async Task RunAsyncT_passes_already_cancelled_token_to_method_if_token_cancelled_beforehand()
         {
-            _shutdownWatcherDouble.CancelIn(_doer.EstimatedMidflightTimeMs);
-            await _host.RunAsync(_doer.DoAsync);
+            _shutdownWatcherDouble.Cancel();
 
-            _doer.Started.Should().BeTrue();
+            var result = await _host.RunAsync(_doer.AlwaysReturnValueAsync);
+
+            _doer.Started.Should().BeFalse();
             _doer.Finished.Should().BeFalse();
+            result.Should().Be(DoerReturnValue.Unstarted);
+        }
+
+        [Fact]
+        public async Task RunAsync_propagates_up_exceptions_thrown_by_action()
+        {
+            _shutdownWatcherDouble.Cancel();
+
+            Func<Task> action = async () => await _host.RunAsync(_doer.ThrowWhenCancelled);
+
+            await action.Should().ThrowAsync<TimeZoneNotFoundException>();
+        }
+
+        [Fact]
+        public async Task RunAsyncT_propagates_up_exceptions_thrown_by_action()
+        {
+            _shutdownWatcherDouble.Cancel();
+
+            Func<Task> action = async () => await _host.RunAsync(_doer.ThrowWhenCancelledOrReturnValue);
+
+            await action.Should().ThrowAsync<TimeZoneNotFoundException>();
         }
 
         public void Dispose()
         {
             _host?.Dispose();
         }
-    }
 
-    internal class Doer
-    {
-        public int MaxLoops => 10;
-        public int LoopDelayMs => 100;
-        public int EstimatedMidflightTimeMs => 500;
-        public bool Finished { get; private set; } = false;
-        public bool Started { get; private set; } = false;
-        public bool IgnoreCancellation { get; set; } = false;
-
-
-        public async Task DoAsync(CancellationToken cancellationToken)
+        private class Doer
         {
-            if (cancellationToken.IsCancellationRequested) return;
+            public int MaxLoops => 10;
+            public int LoopDelayMs => 100;
+            public int EstimatedMidflightTimeMs => 500;
+            public bool Finished { get; private set; } = false;
+            public bool Started { get; private set; } = false;
+            public bool IgnoreCancellation { get; set; } = false;
 
-            Started = true;
-            for (int i = 0; i < MaxLoops; i++)
+
+            public async Task DoAsync(CancellationToken cancellationToken)
             {
-                if (!IgnoreCancellation && cancellationToken.IsCancellationRequested) return;
-                await Task.Delay(LoopDelayMs);
+                await AlwaysReturnValueAsync(cancellationToken);
             }
 
-            Finished = true;
+            public async Task<DoerReturnValue> AlwaysReturnValueAsync(CancellationToken cancellationToken)
+            {
+                if (cancellationToken.IsCancellationRequested) return DoerReturnValue.Unstarted;
+
+                Started = true;
+                for (int i = 0; i < MaxLoops; i++)
+                {
+                    if (!IgnoreCancellation && cancellationToken.IsCancellationRequested) return DoerReturnValue.Started;
+                    await Task.Delay(LoopDelayMs);
+                }
+
+                Finished = true;
+                return DoerReturnValue.Finished;
+            }
+
+            public async Task ThrowWhenCancelled(CancellationToken cancellationToken)
+            {
+                await ThrowWhenCancelledOrReturnValue(cancellationToken);
+            }
+
+            public async Task<DoerReturnValue> ThrowWhenCancelledOrReturnValue(CancellationToken cancellationToken)
+            {
+                var result = await AlwaysReturnValueAsync(cancellationToken);
+
+                if (result == DoerReturnValue.Unstarted || result == DoerReturnValue.Started)
+                    throw new TimeZoneNotFoundException();
+
+                return result;
+            }
         }
-    }
 
-    internal class WebJobShutdownWatcherDouble : IWebJobsShutdownWatcher
-    {
-        private readonly CancellationTokenSource _cts = new CancellationTokenSource();
-
-        public CancellationToken Token => _cts.Token;
-
-        public void Cancel() { _cts.Cancel(); }
-
-        public void CancelIn(int delayMs)
-        {
-            Task.Delay(delayMs).ContinueWith(t => _cts.Cancel());
-        }
-
-        public void Dispose()
-        {
+        private enum DoerReturnValue {
+            Unstarted, Started, Finished
         }
     }
 }

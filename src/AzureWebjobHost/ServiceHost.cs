@@ -13,21 +13,21 @@ namespace AzureWebjobHost
     {
         private readonly JobHost _jobHost;
         private readonly IHostedService _service;
-        private readonly ILogger<ServiceHost> _logger;
 
-        public ServiceHost(IHostedService service, ILogger<ServiceHost> logger, CancellationToken externalToken = default)
+        public ServiceHost(IHostedService service, CancellationToken externalToken = default,
+            IWebJobsShutdownWatcher webJobsShutdownWatcher = default)
         {
             _service = service ?? throw new ArgumentNullException(nameof(service));
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
-            _jobHost = new JobHost(externalToken);
+            _jobHost = new JobHost(externalToken, webJobsShutdownWatcher);
         }
 
         public async Task RunAsync(CancellationToken cancellationToken)
         {
             async Task Serve(CancellationToken token)
             {
-                _logger.LogInformation("Host starting");
+                if (token.IsCancellationRequested) return;
+
                 await _service.StartAsync(cancellationToken);
 
                 while (!token.IsCancellationRequested)
@@ -35,7 +35,6 @@ namespace AzureWebjobHost
                     await Task.Delay(1000);
                 }
 
-                _logger.LogInformation("Host stopping");
                 await _service.StopAsync(default);
             };
 
