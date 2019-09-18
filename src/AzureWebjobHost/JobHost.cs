@@ -12,11 +12,15 @@ namespace AzureWebjobHost
         private const int stoppingWaitTimeMs = 4000;
 
         private readonly IWebJobsShutdownWatcher _webJobsShutdownWatcher;
+        private readonly IDisposable _shutdownHandle;
+
         private readonly CancellationTokenSource _internalCts = new CancellationTokenSource();
         private readonly CancellationTokenSource _linkedCts;
         private readonly ManualResetEventSlim _waitForExit = new ManualResetEventSlim(true);
 
-        public JobHost(CancellationToken externalToken = default, IWebJobsShutdownWatcher webJobsShutdownWatcher = default)
+        public JobHost(IWebJobsShutdownWatcher webJobsShutdownWatcher,
+            IShutdownHandleFactory shutdownHandleFactory,
+            CancellationToken externalToken)
         {
             _linkedCts = CancellationTokenSource.CreateLinkedTokenSource(_internalCts.Token, externalToken);
             _webJobsShutdownWatcher = webJobsShutdownWatcher ?? new WebJobsShutdownWatcher();
@@ -38,12 +42,9 @@ namespace AzureWebjobHost
             }
 
             _webJobsShutdownWatcher.Token.Register(Shutdown);
-            AppDomain.CurrentDomain.ProcessExit += (sender, eventArgs) => Shutdown();
-            Console.CancelKeyPress += (sender, eventArgs) =>
-            {
-                Shutdown();
-                eventArgs.Cancel = true;
-            };
+            _shutdownHandle = shutdownHandleFactory.Create(
+                processExitEventHandler: (sender, eventArgs) => Shutdown(),
+                cancelKeyPressEventHandler: (sender, eventArgs) => { Shutdown(); eventArgs.Cancel = true; });
         }
 
         public async Task RunAsync(Func<CancellationToken, Task> action)
@@ -75,6 +76,7 @@ namespace AzureWebjobHost
         public void Dispose()
         {
             _webJobsShutdownWatcher?.Dispose();
+            _shutdownHandle?.Dispose();
             _linkedCts?.Dispose();
             _internalCts?.Dispose();
             _waitForExit?.Dispose();

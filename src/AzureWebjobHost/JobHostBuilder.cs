@@ -8,13 +8,14 @@ namespace AzureWebjobHost
 
         public JobHostBuilder SetExternalCancellation(CancellationToken token)
         {
-            this._externalToken = token;
+            _externalToken = token;
             return this;
         }
 
         public JobHost Build()
         {
-            return new JobHost(_externalToken);
+            return new JobHost(
+                new WebJobsShutdownWatcher(), new ShutdownHandleFactory(), _externalToken);
         }
     }
 }

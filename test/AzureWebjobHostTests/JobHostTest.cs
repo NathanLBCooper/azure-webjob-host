@@ -11,12 +11,14 @@ namespace AzureWebjobHostTests
     {
         private readonly JobHost _host;
         private readonly WebJobShutdownWatcherDouble _shutdownWatcherDouble;
+        private readonly ShutdownHandleDouble _shutdownHandleDouble;
         private readonly Doer _doer;
 
         public JobHostTest()
         {
             _shutdownWatcherDouble = new WebJobShutdownWatcherDouble();
-            _host = new JobHost(webJobsShutdownWatcher: _shutdownWatcherDouble);
+            _shutdownHandleDouble = new ShutdownHandleDouble();
+            _host = new JobHost(_shutdownWatcherDouble, new ShutdownHandleDoubleFactory(_shutdownHandleDouble), default);
             _doer = new Doer();
         }
 
@@ -101,6 +103,28 @@ namespace AzureWebjobHostTests
             Func<Task> action = async () => await _host.RunAsync(_doer.ThrowWhenCancelledOrReturnValue);
 
             await action.Should().ThrowAsync<TimeZoneNotFoundException>();
+        }
+
+        [Fact]
+        public async Task RunAsync_listens_to_ShutdownHandle_ProcessExit_as_well()
+        {
+            _shutdownHandleDouble.ProcessExitIn(_doer.EstimatedMidflightTimeMs);
+
+            await _host.RunAsync(_doer.DoAsync);
+
+            _doer.Started.Should().BeTrue();
+            _doer.Finished.Should().BeFalse();
+        }
+
+        [Fact]
+        public async Task RunAsync_listens_to_ShutdownHandle_CancelKey_as_well()
+        {
+            _shutdownHandleDouble.CancelKeyPressIn(_doer.EstimatedMidflightTimeMs);
+
+            await _host.RunAsync(_doer.DoAsync);
+
+            _doer.Started.Should().BeTrue();
+            _doer.Finished.Should().BeFalse();
         }
 
         public void Dispose()

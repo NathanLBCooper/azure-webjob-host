@@ -2,7 +2,6 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 
 namespace AzureWebjobHost
 {
@@ -14,12 +13,13 @@ namespace AzureWebjobHost
         private readonly JobHost _jobHost;
         private readonly IHostedService _service;
 
-        public ServiceHost(IHostedService service, CancellationToken externalToken = default,
-            IWebJobsShutdownWatcher webJobsShutdownWatcher = default)
+        public ServiceHost(IHostedService service,
+            IWebJobsShutdownWatcher webJobsShutdownWatcher, IShutdownHandleFactory shutdownHandleFactory,
+            CancellationToken externalToken)
         {
             _service = service ?? throw new ArgumentNullException(nameof(service));
 
-            _jobHost = new JobHost(externalToken, webJobsShutdownWatcher);
+            _jobHost = new JobHost(webJobsShutdownWatcher, shutdownHandleFactory, externalToken);
         }
 
         public async Task RunAsync(CancellationToken cancellationToken)

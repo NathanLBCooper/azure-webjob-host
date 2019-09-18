@@ -10,19 +10,20 @@ namespace AzureWebjobHost
 
         public ServiceHostBuilder HostService(IHostedService service)
         {
-            this._service = service;
+            _service = service;
             return this;
         }
 
         public ServiceHostBuilder SetExternalCancellation(CancellationToken token)
         {
-            this._externalToken = token;
+            _externalToken = token;
             return this;
         }
 
         public ServiceHost Build()
         {
-            return new ServiceHost(_service, _externalToken);
+            return new ServiceHost(
+                _service, new WebJobsShutdownWatcher(), new ShutdownHandleFactory(), _externalToken);
         }
     }
 }
