@@ -3,6 +3,13 @@ Provides shutdown detection for your azure webjob without taking the whole Azure
 
 ----------
 
+[![Build status](https://ci.appveyor.com/api/projects/status/gjlmtxmee7txgnfe?svg=true)](https://ci.appveyor.com/project/NathanLBCooper/azure-webjob-host)
+![GitHub](https://img.shields.io/github/license/NathanLBCooper/azure-webjob-host.svg)
+
+| Package | Version |
+| --- | --- |
+| **AzureWebjobHost** | [![nuget](https://img.shields.io/nuget/v/AzureWebjobHost.svg)](https://www.nuget.org/packages/AzureWebjobHost/) |
+
 #### Background 
 
 The way Azure notifies a WebJob process it's about to be stopped is by placing (creating) a file at a path defined by the environment variable `WEBJOBS_SHUTDOWN_FILE`. This means Azure is going to stop your process in 5 seconds time (although that time is configurable). If you to be able to react, so that you can gracefully shutdown, you'd better listen for it.
