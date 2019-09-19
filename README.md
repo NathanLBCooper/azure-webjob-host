@@ -8,7 +8,7 @@ Provides shutdown detection for your azure webjob without taking the whole Azure
 
 | Package | Version |
 | --- | --- |
-| **AzureWebjobHost** | [![nuget](https://img.shields.io/nuget/v/AzureWebjobHost.svg)](https://www.nuget.org/packages/AzureWebjobHost/) |
+| **AzureWebjobHost** | [![nuget](https://img.shields.io/nuget/v/AzureWebjobHost.svg)](https://www.nuget.org/packages/AzureWebjobHost/) [![Join the chat at https://gitter.im/azure-webjob-host/community](https://badges.gitter.im/azure-webjob-host/community.svg)](https://gitter.im/azure-webjob-host/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) |
 
 #### Background 
 
