@@ -2,7 +2,7 @@ version: 0.1.{build}
 environment:
   nuget_source: https://www.nuget.org/api/v2/package
   nuget_api_key:
-    secure: todo
+    secure: 4HIFeBAgQBGglDp7PknAJIJ8qopoNLuzwEn5FKZ4Xq4rhMl2EqFebPFedqbhvV2N
 build_script:
 - ps: .\build.ps1 -build_number $env:APPVEYOR_BUILD_NUMBER -branch $env:APPVEYOR_REPO_BRANCH
 artifacts:
