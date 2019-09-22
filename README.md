@@ -4,7 +4,7 @@ Provides shutdown detection for your azure webjob without taking the whole Azure
 ----------
 
 [![Build status](https://ci.appveyor.com/api/projects/status/gjlmtxmee7txgnfe?svg=true)](https://ci.appveyor.com/project/NathanLBCooper/azure-webjob-host)
-![GitHub](https://img.shields.io/github/license/NathanLBCooper/azure-webjob-host.svg)
+[![GitHub](https://img.shields.io/github/license/NathanLBCooper/azure-webjob-host.svg)](LICENSE)
 [![Join the chat at https://gitter.im/azure-webjob-host/community](https://badges.gitter.im/azure-webjob-host/community.svg)](https://gitter.im/azure-webjob-host/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 | Package | Version |
